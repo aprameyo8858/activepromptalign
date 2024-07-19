@@ -46,6 +46,15 @@ _tokenizer = _Tokenizer()
 
 from fvcore.nn import FlopCountAnalysis
 
+
+
+number_used_in_buffer=0
+number_of_queries = 0
+number_of_pseudolabels = 0
+k = 10
+buffer_dict=dict()
+entropy_of_samples=[]
+
 def load_clip_to_cpu(cfg):
     backbone_name = cfg.MODEL.BACKBONE.NAME
     url = clip._MODELS[backbone_name]
@@ -523,6 +532,198 @@ class AugMixAugmenter(object):
 
 @TRAINER_REGISTRY.register()
 class PromptAlign(TrainerX):
+
+    def find_min_index(lst):
+        min_index = min(range(len(lst)), key=lambda i: lst[i])
+        return min_index
+    def buffer_dict_builder(classnames):
+        no_of_classes = len(classnames)
+        n = 0
+        global buffer_dict
+
+        #print("there are ",m,"number of classes")
+
+        for i in range(0 , no_of_classes):
+            class_i = classnames[i]
+            buffer_dict[class_i]= []
+
+        return
+
+    def query(loss, static_entropy_threshold=2.75):
+        global number_of_queries
+        global entropy_of_samples
+        #print(avg_entropy(output)[0], "is used in the comparison loop")
+        if len(entropy_of_samples)<30:
+
+            if(loss>static_entropy_threshold):
+                return 1
+            else:
+                return 0
+        else:
+            mean=0
+            for c in range(0,len(entropy_of_samples)):
+                mean=mean+entropy_of_samples[c]
+            mean=mean/len(entropy_of_samples)
+            standard_deviation=0
+
+            for s in range(0,len(entropy_of_samples)):
+                standard_deviation=standard_deviation+(entropy_of_samples[s]-mean)*(entropy_of_samples[s]-mean)
+            standard_deviation=standard_deviation/(len(entropy_of_samples)-1)
+            standard_deviation=math.sqrt(standard_deviation)
+            standard_error=standard_deviation/math.sqrt(len(entropy_of_samples))
+            z_score=(loss-mean)/standard_deviation
+            if (number_of_queries/len(entropy_of_samples))>0.07:
+                if (z_score>=2.3):
+                    return 1
+                else:
+                    return 0
+            if (number_of_queries/len(entropy_of_samples))>0.05:
+                if (z_score>=2.1):
+                    return 1
+                else:
+                    return 0
+            if (number_of_queries/len(entropy_of_samples))<=0.05:
+                if (z_score>=1.65):
+                    return 1
+                else:
+                    return 0
+    def buffer_dict_min_key_finder_and_adjustor(classname,inputs,label,cross_entropy_loss):
+        z=0
+        global buffer_dict
+        sample=0
+        cross_entropy = 1000
+
+        for _class in buffer_dict:
+
+            z+=len(buffer_dict[_class])
+        #print(z,"is at the start")
+
+        max_cardinality_of_class = 0
+        max_class_list=[]
+        imbalance=[]
+        if z>=500 and z<200:
+            for classnames in buffer_dict:
+                if len(buffer_dict[classnames])>max_cardinality_of_class:
+                    max_cardinality_of_class = len(buffer_dict[classnames])
+
+            for classnames in buffer_dict:
+                if len(buffer_dict[classnames])==max_cardinality_of_class:
+                    max_class_list.append(classnames)
+
+
+            for classnames in buffer_dict:
+                imbalance.append(len(buffer_dict[classnames]))
+            delete=0
+            print(imbalance,"is the sample numbers and The standard deviation of the number of buffers is ",np.std(imbalance))
+            if len(max_class_list)==1:
+
+                to_find_min_cross_entropy=[cross_entropy,classname,sample]
+                for classnames in buffer_dict:
+                    if classnames==max_class_list[0] and classname==max_class_list[0]:
+                        delete = 1
+                        for sample_number in range(0,len(buffer_dict[classnames])):
+
+                            if to_find_min_cross_entropy[0]>buffer_dict[classnames][sample_number]['cross_entropy']:
+                                to_find_min_cross_entropy[0]=buffer_dict[classnames][sample_number]['cross_entropy']
+                                to_find_min_cross_entropy[1]=classnames
+                                to_find_min_cross_entropy[2]=sample_number
+                if delete==1:
+
+                    del buffer_dict[to_find_min_cross_entropy[1]][to_find_min_cross_entropy[2]]
+
+
+            else:
+                to_find_min_cross_entropy=[cross_entropy,classname,sample]
+                delete=0
+                copykey=0
+                total_entropy=[]
+                for c in range(0,len(max_class_list)):
+                    for classnames in buffer_dict:
+                        if classnames==max_class_list[c]:
+                            total_entropy.append(0)
+                            for sample_number in range(0,len(buffer_dict[classnames])):
+                                total_entropy[c]=total_entropy[c]+buffer_dict[classnames][sample_number]['cross_entropy']
+                for classnames in buffer_dict:
+                    if classnames==max_class_list[find_min_index(total_entropy)] and classname==classnames:
+                        delete=1
+                        for sample_number in range(0,len(buffer_dict[classnames])):
+                            if to_find_min_cross_entropy[0]>buffer_dict[classnames][sample_number]['cross_entropy']:
+                                to_find_min_cross_entropy[0]=buffer_dict[classnames][sample_number]['cross_entropy']
+                                to_find_min_cross_entropy[1]=classnames
+                                to_find_min_cross_entropy[2]=sample_number
+
+                if delete==1:
+                    del buffer_dict[to_find_min_cross_entropy[1]][to_find_min_cross_entropy[2]]
+        if z>=200:
+            for classnames in buffer_dict:
+                if len(buffer_dict[classnames])>max_cardinality_of_class:
+                        max_cardinality_of_class=len(buffer_dict[classnames])
+
+            for classnames in buffer_dict:
+                if len(buffer_dict[classnames])==max_cardinality_of_class:
+                    max_class_list.append(classnames)
+
+
+            for classnames in buffer_dict:
+                imbalance.append(len(buffer_dict[classnames]))
+
+            print(imbalance,"is the sample numbers and The standard deviation of the number of buffers is ",np.std(imbalance))     
+            if len(max_class_list)==1:
+
+                to_find_min_cross_entropy=[cross_entropy,classname,sample]
+                for classnames in buffer_dict:
+                    if classnames==max_class_list[0]:
+                        for sample_number in range(0,len(buffer_dict[classnames])):
+                            if to_find_min_cross_entropy[0]>buffer_dict[classnames][sample_number]['cross_entropy']:
+                                to_find_min_cross_entropy[0]=buffer_dict[classnames][sample_number]['cross_entropy']
+                                to_find_min_cross_entropy[1]=classnames
+                                to_find_min_cross_entropy[2]=sample_number
+
+                del buffer_dict[to_find_min_cross_entropy[1]][to_find_min_cross_entropy[2]]
+
+                #for i in range (0,6):
+                    #if len(buffer_dict[to_find_min_cross_entropy[1]])!=0:
+                        #del buffer_dict[to_find_min_cross_entropy[1]][0]
+
+            else:
+                to_find_min_cross_entropy=[cross_entropy,classname,sample]
+
+                total_entropy=[]
+                for c in range(0,len(max_class_list)):
+                    for classnames in buffer_dict:
+                        if classnames==max_class_list[c]:
+                            total_entropy.append(0)
+                            for sample_number in range(0,len(buffer_dict[classnames])):
+
+                                total_entropy[c]=total_entropy[c]+buffer_dict[classnames][sample_number]['cross_entropy']
+                    for classnames in buffer_dict:
+                    if classnames==max_class_list[find_min_index(total_entropy)]:
+                        for sample_number in range(0,len(buffer_dict[classnames])):
+
+                            if to_find_min_cross_entropy[0]>buffer_dict[classnames][sample_number]['cross_entropy']:
+                                to_find_min_cross_entropy[0]=buffer_dict[classnames][sample_number]['cross_entropy']
+                                to_find_min_cross_entropy[1]=classnames
+                                to_find_min_cross_entropy[2]=sample_number
+
+                del buffer_dict[to_find_min_cross_entropy[1]][to_find_min_cross_entropy[2]]
+                #for i in range (0,6):
+                    #if len(buffer_dict[to_find_min_cross_entropy[1]])!=0:
+                        #del buffer_dict[to_find_min_cross_entropy[1]][0]
+
+
+        buffer_adder={'image':inputs,'label':label,'cross_entropy':cross_entropy_loss}
+        buffer_dict[classname].append(buffer_adder)
+        #print(torch.cuda.memory_summary(device=None, abbreviated=False))
+
+        print(z,"is the number of buffers present now ")
+
+        return
+
+    
+    model_names = sorted(name for name in models.__dict__
+    if name.islower() and not name.startswith("__")
+    and callable(models.__dict__[name]))
+
     def save_feature_maps(self, save_path='./output/features/'):
         '''
         Saving feature maps (i.e. tokens from transformer)
@@ -792,7 +993,7 @@ class PromptAlign(TrainerX):
         avg_logits = logits.logsumexp(dim=0) - np.log(logits.shape[0]) # avg_logits = logits.mean(0) [1, 1000]
         min_real = torch.finfo(avg_logits.dtype).min
         avg_logits = torch.clamp(avg_logits, min=min_real)
-        return -(avg_logits * torch.exp(avg_logits)).sum(dim=-1)
+        return -(avg_logits * torch.exp(avg_logits)).sum(dim=-1),avg_logits
     
     def distr_align_loss(self, out_feat, targ_feat, layers_from=0, layers_to=12, moments=5):
         '''
