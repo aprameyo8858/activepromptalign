@@ -533,23 +533,24 @@ class AugMixAugmenter(object):
 @TRAINER_REGISTRY.register()
 class PromptAlign(TrainerX):
 
-    def find_min_index(lst):
+    def find_min_index(self,lst):
         min_index = min(range(len(lst)), key=lambda i: lst[i])
         return min_index
-    def buffer_dict_builder(classnames):
+    def buffer_dict_builder(self,classnames):
         no_of_classes = len(classnames)
         n = 0
         global buffer_dict
-
+        #print(classnames)
+        #print(no_of_classes)
         #print("there are ",m,"number of classes")
 
         for i in range(0 , no_of_classes):
             class_i = classnames[i]
             buffer_dict[class_i]= []
-
+            #print(buffer_dict)
         return
 
-    def query(loss, static_entropy_threshold=2.75):
+    def query(self,loss, static_entropy_threshold=2.75):
         global number_of_queries
         global entropy_of_samples
         #print(avg_entropy(output)[0], "is used in the comparison loop")
@@ -587,7 +588,7 @@ class PromptAlign(TrainerX):
                     return 1
                 else:
                     return 0
-    def buffer_dict_min_key_finder_and_adjustor(classname,inputs,label,cross_entropy_loss):
+    def buffer_dict_min_key_finder_and_adjustor(self,classname,inputs,label,cross_entropy_loss):
         z=0
         global buffer_dict
         sample=0
@@ -696,7 +697,7 @@ class PromptAlign(TrainerX):
                             for sample_number in range(0,len(buffer_dict[classnames])):
 
                                 total_entropy[c]=total_entropy[c]+buffer_dict[classnames][sample_number]['cross_entropy']
-                    for classnames in buffer_dict:
+                for classnames in buffer_dict:
                     if classnames==max_class_list[self.find_min_index(total_entropy)]:
                         for sample_number in range(0,len(buffer_dict[classnames])):
 
@@ -714,16 +715,17 @@ class PromptAlign(TrainerX):
         buffer_adder={'image':inputs,'label':label,'cross_entropy':cross_entropy_loss}
         buffer_dict[classname].append(buffer_adder)
         #print(torch.cuda.memory_summary(device=None, abbreviated=False))
+        z_1=0
+        for _class in buffer_dict:
 
-        print(z,"is the number of buffers present now ")
+            z_1+=len(buffer_dict[_class])
+
+        print(z_1,"is the number of buffers present now ")
 
         return
 
     
-    model_names = sorted(name for name in models.__dict__
-    if name.islower() and not name.startswith("__")
-    and callable(models.__dict__[name]))
-
+    
     def save_feature_maps(self, save_path='./output/features/'):
         '''
         Saving feature maps (i.e. tokens from transformer)
@@ -849,7 +851,8 @@ class PromptAlign(TrainerX):
         set_id = self.cfg.DATASET.TPT
         classnames = self.dm.dataset.classnames
         print(classnames)
-        buffer_dict_builder(classnames)
+        self.buffer_dict_builder(classnames)
+        print(len(classnames),"is the number of classes")
         results[set_id] = self.test_time_adapt_eval(self.tpt_loader, self.model, optimizer, optim_state, scaler, self.cfg.TPT,classnames)
         return results
     
@@ -875,7 +878,7 @@ class PromptAlign(TrainerX):
         for i, batch in enumerate(val_loader):
             # images, target = self.parse_batch_test(batch)
             images, target = batch
-            # assert args.gpu is not None
+            #assert args.GPU is not None
             if isinstance(images, list):
                 for k in range(len(images)):
                     # images[k] = images[k].cuda(args.gpu, non_blocking=True)
@@ -889,8 +892,9 @@ class PromptAlign(TrainerX):
                 # images = images.cuda(args.gpu, non_blocking=True)
                 images = images.to(self.device)
                 image = images
-            # target = target.cuda(args.gpu, non_blocking=True)
+            #target = target.cuda(args.GPU, non_blocking=True)
             target = target.to(self.device)
+            #print(target) 
             if args.RUN:
                 images = torch.cat(images, dim=0)
 
@@ -935,6 +939,8 @@ class PromptAlign(TrainerX):
                 progress.display(i)
 
         progress.display_summary()
+        global number_of_queries
+        print("the number of samples actively queried is",number_of_queries)
 
         return [top1.avg, top5.avg]
 
@@ -946,7 +952,7 @@ class PromptAlign(TrainerX):
         query_used=0     
         global buffer_dict
         selected_idx = None
-        for j in range(args.TTA_STEPS):
+        for j in range(0,1):
             with torch.cuda.amp.autocast():
                 if args.COCOOP:
                     output = model((image_feature, pgen_ctx))
@@ -970,7 +976,7 @@ class PromptAlign(TrainerX):
                 images_buffer_list=[]
                 label_buffer_list=[]
                 top_k=10
-                top_ids=self.select_top_k_buffer(avg_logits,top_k)
+                #top_ids=self.select_top_k_buffer(avg_logits,top_k)
                 #for key in buffer_dict:
 
                     #for index in range (0,top_k):
@@ -994,13 +1000,14 @@ class PromptAlign(TrainerX):
                     images_final_tensor=torch.Tensor(z,3,224,224)
                     label_final_tensor=torch.Tensor(z,100)
                     stacked_images=torch.stack(images_buffer_list,dim=0)
-                    output_buffer=model(stacked_images)
-
+                    #output_buffer=model(stacked_images)
+                    #print(stacked_images.size(),"is the size of stacked images")
                     count=0
-                    for count in range(0,z):
+                    for count in range(0,-1):  #it will be range(0,z):
                          loss_active,avg_logits_active=self.avg_entropy(output_buffer[count])
-                         loss_buffer+=F.cross_entropy(torch.unsqueeze(output_buffer[count],0),label_buffer_list[count])
-                if(query(loss.item())):
+                         loss_buffer=loss_buffer+F.cross_entropy(torch.unsqueeze(output_buffer[count],0),label_buffer_list[count])
+                         #print(loss_buffer,"is loss buffer")
+                if(self.query(loss.item())):
 
 
                     #query_used=1
@@ -1009,6 +1016,7 @@ class PromptAlign(TrainerX):
                     image_to_buffer=inputs[0].unsqueeze(0)
                     global number_used_in_buffer
                     #if classnames[label.item()]!=classnames[top_ids[0]]:
+                    print(image_to_buffer.size(),"is the size of the tensor that goes into the buffer",inputs.size,"is the size of inputs")
                     number_used_in_buffer=number_used_in_buffer+1
                     self.buffer_dict_min_key_finder_and_adjustor(classnames[label.item()],image_to_buffer,label,F.cross_entropy(torch.unsqueeze(avg_logits,0),label)) #only to find base TPT
                     active_loss=F.cross_entropy(torch.unsqueeze(avg_logits,0),label)
@@ -1021,53 +1029,62 @@ class PromptAlign(TrainerX):
                 if args.DISTR_ALIGN:
                     DISTR_LOSS_W = args.DISTR_LOSS_W / (args.ALIGN_LAYER_TO - args.ALIGN_LAYER_FROM)
                     if not args.TPT_LOSS:
-                        loss = DISTR_LOSS_W * self.distr_align_loss(out_feat_distr, target_feat_distr, 
+                        align_loss = DISTR_LOSS_W * self.distr_align_loss(out_feat_distr, target_feat_distr, 
                                                 layers_from=args.ALIGN_LAYER_FROM, layers_to=args.ALIGN_LAYER_TO)
                     else: 
-                        loss += DISTR_LOSS_W * self.distr_align_loss(out_feat_distr, target_feat_distr, 
+                        align_loss = DISTR_LOSS_W * self.distr_align_loss(out_feat_distr, target_feat_distr, 
                                                 layers_from=args.ALIGN_LAYER_FROM, layers_to=args.ALIGN_LAYER_TO)
 
-            if j==0 and active_loss==0 and z==0:
-                loss=loss
-                optimizer.zero_grad(set_to_none=True)
-                scaler.scale(loss).backward()
-                # Unscales the gradients of optimizer's assigned params in-place
-                scaler.step(optimizer)
-                scaler.update()
-                if args.cocoop:
-                    return pgen_ctx,query_used
+                if active_loss==0 and z==0:
+                    loss=loss+align_loss
+                    optimizer.zero_grad()
+                    #print(loss)
+                    scaler.scale(loss).backward()
+                    # Unscales the gradients of optimizer's assigned params in-place
+                    scaler.step(optimizer)
+                    scaler.update()
+                    if args.COCOOP:
+                        return pgen_ctx,query_used
 
-                return query_used
-            elif active_loss==0 and z!=0:
-                if j==0:
-                    loss=0.5*loss+0.5*loss_buffer/z
-                else:
-                    loss=loss_buffer/z
-                #elif z>1:
-                    #loss=loss+(loss_buffer+mixup_cross_loss)/(z+1)
-            elif j==0 and active_loss!=0 and z==0:
-                #loss=active_loss #normal implementation
-                loss=loss  #only to find base TPT
-                optimizer.zero_grad(set_to_none=True)
-                scaler.scale(loss).backward()
-                # Unscales the gradients of optimizer's assigned params in-place
-                scaler.step(optimizer)
-                scaler.update()
-                if args.cocoop:
-                    return pgen_ctx,query_used
+                    return query_used
+                elif active_loss==0 and z!=0:
+                    #loss=loss+align_loss
+                    loss=loss+loss_buffer/z+align_loss
+                    optimizer.zero_grad()
+                    #print("reach here")
+                    # compute gradient and do SGD step
+                    #print(loss)
+                    scaler.scale(loss).backward()
+                    # Unscales the gradients of optimizer's assigned params in-place
+                    scaler.step(optimizer)
+                    scaler.update()
+                    
+                elif active_loss!=0 and z==0:
+                    #loss=active_loss+align_loss #normal implementation
+                    loss=loss+align_loss  #only to find base TPT
+                    optimizer.zero_grad()
+                    #print(loss)
+                    scaler.scale(loss).backward()
+                    # Unscales the gradients of optimizer's assigned params in-place
+                    scaler.step(optimizer)
+                    scaler.update()
+                    if args.COCOOP:
+                        return pgen_ctx,query_used
 
-                return query_used
-            elif active_loss!=0 and z!=0:
-                if j==0:
-                    loss=0.5*loss+0.5*(loss_buffer)/z
-                else:
-                    loss=loss_buffer/z
-            optimizer.zero_grad()
-            # compute gradient and do SGD step
-            scaler.scale(loss).backward()
-            # Unscales the gradients of optimizer's assigned params in-place
-            scaler.step(optimizer)
-            scaler.update()
+                    return query_used
+                elif active_loss!=0 and z!=0:
+                    #loss=loss+align_loss
+                    #loss=active_loss+align_loss
+                    loss=loss+(loss_buffer)/z+align_loss
+                    #loss=loss+(loss_buffer)/z
+                    optimizer.zero_grad()
+                    #print("reach here")
+                    # compute gradient and do SGD step
+                    #print(loss)
+                    scaler.scale(loss).backward()
+                    # Unscales the gradients of optimizer's assigned params in-place
+                    scaler.step(optimizer)
+                    scaler.update()
         if args.COCOOP:
             return pgen_ctx, query_used
 
@@ -1187,9 +1204,9 @@ class PromptAlign(TrainerX):
         # Note that multi-gpu training could be slow because CLIP's size is
         # big, which slows down the copy operation in DataParallel
         device_count = torch.cuda.device_count()
-        if device_count > 1:
-            print(f"Multiple GPUs detected (n_gpus={device_count}), use all of them!")
-            self.model = nn.DataParallel(self.model)
+        #if device_count > 1:
+            #print(f"Multiple GPUs detected (n_gpus={device_count}), use all of them!")
+            #self.model = nn.DataParallel(self.model)
 
     def forward_backward(self, batch):
         image, label = self.parse_batch_train(batch)
