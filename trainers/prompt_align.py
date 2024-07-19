@@ -644,7 +644,7 @@ class PromptAlign(TrainerX):
                             for sample_number in range(0,len(buffer_dict[classnames])):
                                 total_entropy[c]=total_entropy[c]+buffer_dict[classnames][sample_number]['cross_entropy']
                 for classnames in buffer_dict:
-                    if classnames==max_class_list[find_min_index(total_entropy)] and classname==classnames:
+                    if classnames==max_class_list[self.find_min_index(total_entropy)] and classname==classnames:
                         delete=1
                         for sample_number in range(0,len(buffer_dict[classnames])):
                             if to_find_min_cross_entropy[0]>buffer_dict[classnames][sample_number]['cross_entropy']:
@@ -697,7 +697,7 @@ class PromptAlign(TrainerX):
 
                                 total_entropy[c]=total_entropy[c]+buffer_dict[classnames][sample_number]['cross_entropy']
                     for classnames in buffer_dict:
-                    if classnames==max_class_list[find_min_index(total_entropy)]:
+                    if classnames==max_class_list[self.find_min_index(total_entropy)]:
                         for sample_number in range(0,len(buffer_dict[classnames])):
 
                             if to_find_min_cross_entropy[0]>buffer_dict[classnames][sample_number]['cross_entropy']:
@@ -847,10 +847,13 @@ class PromptAlign(TrainerX):
 
         results = {}
         set_id = self.cfg.DATASET.TPT
-        results[set_id] = self.test_time_adapt_eval(self.tpt_loader, self.model, optimizer, optim_state, scaler, self.cfg.TPT)
+        classnames = self.dm.dataset.classnames
+        print(classnames)
+        buffer_dict_builder(classnames)
+        results[set_id] = self.test_time_adapt_eval(self.tpt_loader, self.model, optimizer, optim_state, scaler, self.cfg.TPT,classnames)
         return results
     
-    def test_time_adapt_eval(self, val_loader, model, optimizer, optim_state, scaler, args):
+    def test_time_adapt_eval(self, val_loader, model, optimizer, optim_state, scaler, args,classnames):
         batch_time = AverageMeter_TPT('Time', ':6.3f', Summary.NONE)
         top1 = AverageMeter_TPT('Acc@1', ':6.2f', Summary.AVERAGE)
         top5 = AverageMeter_TPT('Acc@5', ':6.2f', Summary.AVERAGE)
@@ -897,13 +900,13 @@ class PromptAlign(TrainerX):
                     with torch.no_grad():
                         model.reset()
                 optimizer.load_state_dict(optim_state)
-                self.test_time_tuning(model, images, optimizer, scaler, args)
+                query_used=self.test_time_tuning(model, images, target , optimizer, scaler, args,classnames)
             else:
                 with torch.no_grad():
                     with torch.cuda.amp.autocast():
                         image_feature, pgen_ctx = model.gen_ctx(images, args.RUN)
                 optimizer = None
-                pgen_ctx = self.test_time_tuning(model, (image_feature, pgen_ctx), optimizer, scaler, args)
+                pgen_ctx,query_used = self.test_time_tuning(model, (image_feature, pgen_ctx),target, optimizer, scaler, args, classnames)
 
             # The actual inference goes here
             if args.RUN:
@@ -918,10 +921,11 @@ class PromptAlign(TrainerX):
                         output = model(image)
 
             # measure accuracy and record loss
-            acc1, acc5 = accuracy(output, target, topk=(1, 5))
+            if query_used==0:
+                acc1, acc5 = accuracy(output, target, topk=(1, 5))
                     
-            top1.update(acc1[0], image.size(0))
-            top5.update(acc5[0], image.size(0))
+                top1.update(acc1[0], image.size(0))
+                top5.update(acc5[0], image.size(0))
 
             # measure elapsed time
             batch_time.update(time.time() - end)
@@ -934,12 +938,13 @@ class PromptAlign(TrainerX):
 
         return [top1.avg, top5.avg]
 
-    def test_time_tuning(self, model, inputs, optimizer, scaler, args):
+    def test_time_tuning(self, model, inputs,label, optimizer, scaler, args,classnames):
         if args.COCOOP:
             image_feature, pgen_ctx = inputs
             pgen_ctx.requires_grad = True
             optimizer = torch.optim.AdamW([pgen_ctx], args.LR)
-        
+        query_used=0     
+        global buffer_dict
         selected_idx = None
         for j in range(args.TTA_STEPS):
             with torch.cuda.amp.autocast():
@@ -954,8 +959,59 @@ class PromptAlign(TrainerX):
                     output, selected_idx = self.select_confident_samples(output, args.TPT_THRESHOLD, args.ALIGN_THRESHOLD)
 
                 if args.TPT_LOSS:
-                    loss = self.avg_entropy(output)
+                    loss, avg_logits = self.avg_entropy(output)
+                    global entropy_of_samples
+                    #print(loss.item(),"is loss item  the loss",avg_entropy(output)[0],"goes into query function")
+                    entropy_of_samples.append(loss.item())
+                active_loss=0
+                loss_buffer=0
+                z=0
+                q=0
+                images_buffer_list=[]
+                label_buffer_list=[]
+                top_k=10
+                top_ids=self.select_top_k_buffer(avg_logits,top_k)
+                #for key in buffer_dict:
 
+                    #for index in range (0,top_k):
+                        #if len(buffer_dict[key])!=0 and key==classnames[top_ids[index]]:
+                            #z+=len(buffer_dict[key])
+                            #if z <=200 :
+                                #for key_1 in range(0,len(buffer_dict[key])):
+
+                                    #images_buffer_list.append(buffer_dict[key][key_1]['image'].reshape([3,224,224]))
+                                    #label_buffer_list.append(buffer_dict[key][key_1]['label'])
+                
+                for key in buffer_dict:
+
+                    z+=len(buffer_dict[key])
+                    if len(buffer_dict[key])!=0:
+                        for key_1 in range(0,len(buffer_dict[key])):
+
+                            images_buffer_list.append(buffer_dict[key][key_1]['image'].reshape([3,224,224]))
+                            label_buffer_list.append(buffer_dict[key][key_1]['label'])
+                if z!=0:
+                    images_final_tensor=torch.Tensor(z,3,224,224)
+                    label_final_tensor=torch.Tensor(z,100)
+                    stacked_images=torch.stack(images_buffer_list,dim=0)
+                    output_buffer=model(stacked_images)
+
+                    count=0
+                    for count in range(0,z):
+                         loss_active,avg_logits_active=self.avg_entropy(output_buffer[count])
+                         loss_buffer+=F.cross_entropy(torch.unsqueeze(output_buffer[count],0),label_buffer_list[count])
+                if(query(loss.item())):
+
+
+                    #query_used=1
+                    global number_of_queries
+                    number_of_queries = number_of_queries + 1
+                    image_to_buffer=inputs[0].unsqueeze(0)
+                    global number_used_in_buffer
+                    #if classnames[label.item()]!=classnames[top_ids[0]]:
+                    number_used_in_buffer=number_used_in_buffer+1
+                    self.buffer_dict_min_key_finder_and_adjustor(classnames[label.item()],image_to_buffer,label,F.cross_entropy(torch.unsqueeze(avg_logits,0),label)) #only to find base TPT
+                    active_loss=F.cross_entropy(torch.unsqueeze(avg_logits,0),label)
                 # Only selected indexes
                 target_feat_distr = (self.visual_means, self.visual_vars)
                 out_visual_mean = torch.cat([torch.mean(res.visual_feat[:, selected_idx, :], dim=1, keepdims=True).permute(1,0,2) for res in model.image_encoder.transformer.resblocks])
@@ -970,7 +1026,42 @@ class PromptAlign(TrainerX):
                     else: 
                         loss += DISTR_LOSS_W * self.distr_align_loss(out_feat_distr, target_feat_distr, 
                                                 layers_from=args.ALIGN_LAYER_FROM, layers_to=args.ALIGN_LAYER_TO)
-            
+
+            if j==0 and active_loss==0 and z==0:
+                loss=loss
+                optimizer.zero_grad(set_to_none=True)
+                scaler.scale(loss).backward()
+                # Unscales the gradients of optimizer's assigned params in-place
+                scaler.step(optimizer)
+                scaler.update()
+                if args.cocoop:
+                    return pgen_ctx,query_used
+
+                return query_used
+            elif active_loss==0 and z!=0:
+                if j==0:
+                    loss=0.5*loss+0.5*loss_buffer/z
+                else:
+                    loss=loss_buffer/z
+                #elif z>1:
+                    #loss=loss+(loss_buffer+mixup_cross_loss)/(z+1)
+            elif j==0 and active_loss!=0 and z==0:
+                #loss=active_loss #normal implementation
+                loss=loss  #only to find base TPT
+                optimizer.zero_grad(set_to_none=True)
+                scaler.scale(loss).backward()
+                # Unscales the gradients of optimizer's assigned params in-place
+                scaler.step(optimizer)
+                scaler.update()
+                if args.cocoop:
+                    return pgen_ctx,query_used
+
+                return query_used
+            elif active_loss!=0 and z!=0:
+                if j==0:
+                    loss=0.5*loss+0.5*(loss_buffer)/z
+                else:
+                    loss=loss_buffer/z
             optimizer.zero_grad()
             # compute gradient and do SGD step
             scaler.scale(loss).backward()
@@ -978,9 +1069,9 @@ class PromptAlign(TrainerX):
             scaler.step(optimizer)
             scaler.update()
         if args.COCOOP:
-            return pgen_ctx
+            return pgen_ctx, query_used
 
-        return
+        return query_used
     
     def select_confident_samples(self, logits, topTPT, topAlign):
         batch_entropy = -(logits.softmax(1) * logits.log_softmax(1)).sum(1)
