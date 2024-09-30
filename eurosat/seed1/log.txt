@@ -1,0 +1,729 @@
+***************
+** Arguments **
+***************
+backbone: 
+config_file: configs/trainers/PromptAlign/finegrain_PAlign_vit_b16_c2_ep5_batch4_2ctx_cross_datasets.yaml
+dataset_config_file: configs/datasets/eurosat.yaml
+eval_only: False
+head: 
+load_epoch: 2
+model_dir: /home/owais/PromptAlign/seed1
+no_train: False
+opts: ['DATASET.NUM_SHOTS', '16']
+output_dir: output/evaluation/PromptAlign/finegrain_PAlign_vit_b16_c2_ep5_batch4_2ctx_cross_datasets_16shots/eurosat/seed1
+resume: 
+root: ./data
+seed: 1
+source_domains: None
+target_domains: None
+tpt: True
+trainer: PromptAlign
+transforms: None
+************
+** Config **
+************
+DATALOADER:
+  K_TRANSFORMS: 1
+  NUM_WORKERS: 12
+  RETURN_IMG0: False
+  TEST:
+    BATCH_SIZE: 100
+    SAMPLER: SequentialSampler
+  TRAIN_U:
+    BATCH_SIZE: 32
+    N_DOMAIN: 0
+    N_INS: 16
+    SAME_AS_X: True
+    SAMPLER: RandomSampler
+  TRAIN_X:
+    BATCH_SIZE: 4
+    N_DOMAIN: 0
+    N_INS: 16
+    SAMPLER: RandomSampler
+DATASET:
+  ALL_AS_UNLABELED: False
+  CIFAR_C_LEVEL: 1
+  CIFAR_C_TYPE: 
+  NAME: EuroSAT
+  NUM_LABELED: -1
+  NUM_SHOTS: 16
+  ROOT: ./data
+  SOURCE_DOMAINS: ()
+  STL10_FOLD: -1
+  SUBSAMPLE_CLASSES: all
+  TARGET_DOMAINS: ()
+  TPT: eurosat
+  VAL_PERCENT: 0.1
+  VARIANT: Worlds
+INPUT:
+  COLORJITTER_B: 0.4
+  COLORJITTER_C: 0.4
+  COLORJITTER_H: 0.1
+  COLORJITTER_S: 0.4
+  CROP_PADDING: 4
+  CUTOUT_LEN: 16
+  CUTOUT_N: 1
+  GB_K: 21
+  GB_P: 0.5
+  GN_MEAN: 0.0
+  GN_STD: 0.15
+  INTERPOLATION: bicubic
+  NO_TRANSFORM: False
+  PIXEL_MEAN: [0.48145466, 0.4578275, 0.40821073]
+  PIXEL_STD: [0.26862954, 0.26130258, 0.27577711]
+  RANDAUGMENT_M: 10
+  RANDAUGMENT_N: 2
+  RGS_P: 0.2
+  RRCROP_SCALE: (0.08, 1.0)
+  SIZE: (224, 224)
+  TRANSFORMS: ('random_resized_crop', 'random_flip', 'normalize')
+MODEL:
+  BACKBONE:
+    NAME: ViT-B/16
+    PRETRAINED: True
+  HEAD:
+    ACTIVATION: relu
+    BN: True
+    DROPOUT: 0.0
+    HIDDEN_LAYERS: ()
+    NAME: 
+  INIT_WEIGHTS: 
+OPTIM:
+  ADAM_BETA1: 0.9
+  ADAM_BETA2: 0.999
+  BASE_LR_MULT: 0.1
+  GAMMA: 0.1
+  LR: 0.0026
+  LR_SCHEDULER: cosine
+  MAX_EPOCH: 2
+  MOMENTUM: 0.9
+  NAME: sgd
+  NEW_LAYERS: ()
+  RMSPROP_ALPHA: 0.99
+  SGD_DAMPNING: 0
+  SGD_NESTEROV: False
+  STAGED_LR: False
+  STEPSIZE: (-1,)
+  WARMUP_CONS_LR: 1e-05
+  WARMUP_EPOCH: 1
+  WARMUP_MIN_LR: 1e-05
+  WARMUP_RECOUNT: True
+  WARMUP_TYPE: constant
+  WEIGHT_DECAY: 0.0005
+OUTPUT_DIR: output/evaluation/PromptAlign/finegrain_PAlign_vit_b16_c2_ep5_batch4_2ctx_cross_datasets_16shots/eurosat/seed1
+RESUME: 
+SEED: 1
+TEST:
+  COMPUTE_CMAT: False
+  EVALUATOR: Classification
+  FINAL_MODEL: last_step
+  NO_TEST: False
+  PER_CLASS_RESULT: False
+  SPLIT: test
+TPT:
+  ALIGN_LAYER_FROM: 0
+  ALIGN_LAYER_TO: 9
+  ALIGN_THRESHOLD: 0.1
+  BATCH_SIZE: 64
+  COCOOP: False
+  DISTR_ALIGN: True
+  DISTR_LOSS_W: 100.0
+  GPU: 1
+  LOADER: True
+  LR: 0.0005
+  RUN: True
+  TPT_LOSS: True
+  TPT_THRESHOLD: 0.1
+  TTA_STEPS: 1
+  VIS_MEANS: ./output/features/ImgNetpre_vis_means.pt
+  VIS_VARS: ./output/features/ImgNetpre_vis_vars.pt
+TRAIN:
+  CHECKPOINT_FREQ: 0
+  COUNT_ITER: train_x
+  PRINT_FREQ: 20
+TRAINER:
+  CDAC:
+    CLASS_LR_MULTI: 10
+    P_THRESH: 0.95
+    RAMPUP_COEF: 30
+    RAMPUP_ITRS: 1000
+    STRONG_TRANSFORMS: ()
+    TOPK_MATCH: 5
+  CROSSGRAD:
+    ALPHA_D: 0.5
+    ALPHA_F: 0.5
+    EPS_D: 1.0
+    EPS_F: 1.0
+  DAEL:
+    CONF_THRE: 0.95
+    STRONG_TRANSFORMS: ()
+    WEIGHT_U: 0.5
+  DAELDG:
+    CONF_THRE: 0.95
+    STRONG_TRANSFORMS: ()
+    WEIGHT_U: 0.5
+  DDAIG:
+    ALPHA: 0.5
+    CLAMP: False
+    CLAMP_MAX: 1.0
+    CLAMP_MIN: -1.0
+    G_ARCH: 
+    LMDA: 0.3
+    WARMUP: 0
+  DOMAINMIX:
+    ALPHA: 1.0
+    BETA: 1.0
+    TYPE: crossdomain
+  ENTMIN:
+    LMDA: 0.001
+  FIXMATCH:
+    CONF_THRE: 0.95
+    STRONG_TRANSFORMS: ()
+    WEIGHT_U: 1.0
+  M3SDA:
+    LMDA: 0.5
+    N_STEP_F: 4
+  MAPLE:
+    CTX_INIT: a photo of a
+    N_CTX: 2
+    PREC: fp16
+    PROMPT_DEPTH: 9
+  MCD:
+    N_STEP_F: 4
+  MEANTEACHER:
+    EMA_ALPHA: 0.999
+    RAMPUP: 5
+    WEIGHT_U: 1.0
+  MIXMATCH:
+    MIXUP_BETA: 0.75
+    RAMPUP: 20000
+    TEMP: 2.0
+    WEIGHT_U: 100.0
+  MME:
+    LMDA: 0.1
+  NAME: PromptAlign
+  PROMPTALIGN:
+    CTX_INIT: a photo of a
+    N_CTX: 2
+    PREC: fp16
+    PROMPT_DEPTH: 3
+  SE:
+    CONF_THRE: 0.95
+    EMA_ALPHA: 0.999
+    RAMPUP: 300
+USE_CUDA: True
+VERBOSE: True
+VERSION: 1
+Collecting env info ...
+** System info **
+PyTorch version: 1.9.0+cu111
+Is debug build: False
+CUDA used to build PyTorch: 11.1
+ROCM used to build PyTorch: N/A
+
+OS: Ubuntu 20.04.5 LTS (x86_64)
+GCC version: (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
+Clang version: Could not collect
+CMake version: Could not collect
+Libc version: glibc-2.31
+
+Python version: 3.8 (64-bit runtime)
+Python platform: Linux-5.15.0-113-generic-x86_64-with-glibc2.17
+Is CUDA available: True
+CUDA runtime version: 10.1.243
+GPU models and configuration: 
+GPU 0: NVIDIA A40
+GPU 1: NVIDIA A40
+
+Nvidia driver version: 535.183.01
+cuDNN version: Could not collect
+HIP runtime version: N/A
+MIOpen runtime version: N/A
+
+Versions of relevant libraries:
+[pip3] galore-torch==1.0
+[pip3] numpy==1.24.4
+[pip3] torch==1.9.0+cu111
+[pip3] torchaudio==0.9.0
+[pip3] torchvision==0.10.0+cu111
+[conda] torch                     1.9.0+cu111              pypi_0    pypi
+[conda] torchaudio                0.9.0                    pypi_0    pypi
+[conda] torchvision               0.10.0+cu111             pypi_0    pypi
+        Pillow (10.4.0)
+
+Loading trainer: PromptAlign
+Loading dataset: EuroSAT
+Reading split from /home/owais/PromptAlign/data/eurosat/split_zhou_EuroSAT.json
+Loading preprocessed few-shot data from /home/owais/PromptAlign/data/eurosat/split_fewshot/shot_16-seed_1.pkl
+Building transform_train
++ random resized crop (size=(224, 224), scale=(0.08, 1.0))
++ random flip
++ to torch tensor of range [0, 1]
++ normalization (mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711])
+Building transform_test
++ resize the smaller edge to 224
++ 224x224 center crop
++ to torch tensor of range [0, 1]
++ normalization (mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711])
+---------  -------
+Dataset    EuroSAT
+# classes  10
+# train_x  160
+# val      40
+# test     8,100
+---------  -------
+Loading pre-computed means and vars
+Loading CLIP (backbone: ViT-B/16)
+Building custom CLIP
+MaPLe design: Multi-modal Prompt Learning
+Initial context: "a photo of a"
+Number of MaPLe context words (tokens): 2
+Turning off gradients in both the image and the text encoder
+Parameters to be updated: {'prompt_learner.ctx', 'prompt_learner.proj.bias', 'prompt_learner.compound_prompts_text.1', 'prompt_learner.compound_prompt_projections.1.weight', 'prompt_learner.proj.weight', 'prompt_learner.compound_prompt_projections.1.bias', 'prompt_learner.compound_prompt_projections.0.weight', 'prompt_learner.compound_prompt_projections.0.bias', 'prompt_learner.compound_prompts_text.0'}
+Loading evaluator: Classification
+Loading weights to MultiModalPromptLearner from "/home/owais/PromptAlign/seed1/MultiModalPromptLearner/model.pth.tar-2" (epoch = 2)
+Re-updating prompt initializations to current prompts.
+=> Using native Torch AMP. Training in mixed precision.
+number of test samples: 8100
+['Annual Crop Land', 'Forest', 'Herbaceous Vegetation Land', 'Highway or Road', 'Industrial Buildings', 'Pasture Land', 'Permanent Crop Land', 'Residential Buildings', 'River', 'Sea or Lake']
+10 is the number of classes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+Running for 64 Augmented views
+Running for 1 TTA steps
+1 is the number of buffers present now 
+2 is the number of buffers present now 
+3 is the number of buffers present now 
+4 is the number of buffers present now 
+5 is the number of buffers present now 
+6 is the number of buffers present now 
+7 is the number of buffers present now 
+8 is the number of buffers present now 
+Test: [ 199/8100]	Time  0.482 ( 0.471)	Acc@1   0.00 ( 47.50)	Acc@5   0.00 ( 82.50)
+9 is the number of buffers present now 
+10 is the number of buffers present now 
+11 is the number of buffers present now 
+12 is the number of buffers present now 
+13 is the number of buffers present now 
+14 is the number of buffers present now 
+15 is the number of buffers present now 
+16 is the number of buffers present now 
+17 is the number of buffers present now 
+Test: [ 399/8100]	Time  0.545 ( 0.502)	Acc@1   0.00 ( 50.25)	Acc@5 100.00 ( 84.25)
+18 is the number of buffers present now 
+19 is the number of buffers present now 
+20 is the number of buffers present now 
+21 is the number of buffers present now 
+22 is the number of buffers present now 
+23 is the number of buffers present now 
+24 is the number of buffers present now 
+25 is the number of buffers present now 
+26 is the number of buffers present now 
+27 is the number of buffers present now 
+28 is the number of buffers present now 
+29 is the number of buffers present now 
+30 is the number of buffers present now 
+31 is the number of buffers present now 
+Test: [ 599/8100]	Time  0.633 ( 0.538)	Acc@1 100.00 ( 49.83)	Acc@5 100.00 ( 84.67)
+32 is the number of buffers present now 
+33 is the number of buffers present now 
+34 is the number of buffers present now 
+35 is the number of buffers present now 
+36 is the number of buffers present now 
+37 is the number of buffers present now 
+38 is the number of buffers present now 
+39 is the number of buffers present now 
+40 is the number of buffers present now 
+41 is the number of buffers present now 
+Test: [ 799/8100]	Time  0.727 ( 0.575)	Acc@1   0.00 ( 49.88)	Acc@5 100.00 ( 83.88)
+42 is the number of buffers present now 
+43 is the number of buffers present now 
+44 is the number of buffers present now 
+45 is the number of buffers present now 
+46 is the number of buffers present now 
+47 is the number of buffers present now 
+48 is the number of buffers present now 
+49 is the number of buffers present now 
+50 is the number of buffers present now 
+51 is the number of buffers present now 
+52 is the number of buffers present now 
+53 is the number of buffers present now 
+54 is the number of buffers present now 
+Test: [ 999/8100]	Time  0.765 ( 0.611)	Acc@1 100.00 ( 50.40)	Acc@5 100.00 ( 83.90)
+55 is the number of buffers present now 
+56 is the number of buffers present now 
+57 is the number of buffers present now 
+58 is the number of buffers present now 
+59 is the number of buffers present now 
+60 is the number of buffers present now 
+61 is the number of buffers present now 
+62 is the number of buffers present now 
+63 is the number of buffers present now 
+Test: [1199/8100]	Time  0.846 ( 0.643)	Acc@1   0.00 ( 50.67)	Acc@5 100.00 ( 83.92)
+64 is the number of buffers present now 
+65 is the number of buffers present now 
+66 is the number of buffers present now 
+67 is the number of buffers present now 
+68 is the number of buffers present now 
+69 is the number of buffers present now 
+70 is the number of buffers present now 
+Test: [1399/8100]	Time  0.848 ( 0.672)	Acc@1 100.00 ( 51.29)	Acc@5 100.00 ( 84.21)
+71 is the number of buffers present now 
+72 is the number of buffers present now 
+73 is the number of buffers present now 
+74 is the number of buffers present now 
+75 is the number of buffers present now 
+76 is the number of buffers present now 
+77 is the number of buffers present now 
+78 is the number of buffers present now 
+79 is the number of buffers present now 
+80 is the number of buffers present now 
+81 is the number of buffers present now 
+82 is the number of buffers present now 
+83 is the number of buffers present now 
+84 is the number of buffers present now 
+Test: [1599/8100]	Time  0.497 ( 0.662)	Acc@1   0.00 ( 51.00)	Acc@5 100.00 ( 84.12)
+85 is the number of buffers present now 
+86 is the number of buffers present now 
+87 is the number of buffers present now 
+88 is the number of buffers present now 
+89 is the number of buffers present now 
+90 is the number of buffers present now 
+91 is the number of buffers present now 
+Test: [1799/8100]	Time  0.508 ( 0.645)	Acc@1 100.00 ( 50.22)	Acc@5 100.00 ( 83.94)
+92 is the number of buffers present now 
+93 is the number of buffers present now 
+94 is the number of buffers present now 
+95 is the number of buffers present now 
+96 is the number of buffers present now 
+97 is the number of buffers present now 
+98 is the number of buffers present now 
+99 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [1999/8100]	Time  0.540 ( 0.633)	Acc@1 100.00 ( 50.15)	Acc@5 100.00 ( 84.15)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [2199/8100]	Time  0.540 ( 0.625)	Acc@1   0.00 ( 49.41)	Acc@5 100.00 ( 84.09)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [2399/8100]	Time  0.539 ( 0.618)	Acc@1   0.00 ( 49.92)	Acc@5 100.00 ( 84.21)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [2599/8100]	Time  0.548 ( 0.612)	Acc@1   0.00 ( 50.35)	Acc@5 100.00 ( 84.35)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [2799/8100]	Time  0.541 ( 0.607)	Acc@1 100.00 ( 50.04)	Acc@5 100.00 ( 84.32)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [2999/8100]	Time  0.533 ( 0.603)	Acc@1 100.00 ( 49.93)	Acc@5 100.00 ( 84.40)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [3199/8100]	Time  0.541 ( 0.599)	Acc@1   0.00 ( 49.94)	Acc@5 100.00 ( 84.47)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [3399/8100]	Time  0.540 ( 0.595)	Acc@1 100.00 ( 49.74)	Acc@5 100.00 ( 84.62)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [3599/8100]	Time  0.533 ( 0.592)	Acc@1   0.00 ( 49.61)	Acc@5 100.00 ( 84.36)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [3799/8100]	Time  0.540 ( 0.589)	Acc@1   0.00 ( 49.68)	Acc@5   0.00 ( 84.34)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [3999/8100]	Time  0.531 ( 0.587)	Acc@1   0.00 ( 49.53)	Acc@5 100.00 ( 84.25)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [4199/8100]	Time  0.541 ( 0.584)	Acc@1 100.00 ( 49.64)	Acc@5 100.00 ( 84.31)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [4399/8100]	Time  0.541 ( 0.582)	Acc@1 100.00 ( 49.68)	Acc@5 100.00 ( 84.32)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [4599/8100]	Time  0.542 ( 0.580)	Acc@1 100.00 ( 49.61)	Acc@5 100.00 ( 84.35)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [4799/8100]	Time  0.545 ( 0.579)	Acc@1   0.00 ( 49.38)	Acc@5 100.00 ( 84.29)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [4999/8100]	Time  0.537 ( 0.577)	Acc@1   0.00 ( 49.44)	Acc@5 100.00 ( 84.30)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [5199/8100]	Time  0.540 ( 0.576)	Acc@1 100.00 ( 49.17)	Acc@5 100.00 ( 84.23)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [5399/8100]	Time  0.548 ( 0.575)	Acc@1   0.00 ( 48.89)	Acc@5 100.00 ( 84.19)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [5599/8100]	Time  0.531 ( 0.573)	Acc@1 100.00 ( 49.11)	Acc@5 100.00 ( 84.25)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [5799/8100]	Time  0.531 ( 0.572)	Acc@1 100.00 ( 48.86)	Acc@5 100.00 ( 84.16)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [5999/8100]	Time  0.539 ( 0.571)	Acc@1   0.00 ( 48.88)	Acc@5 100.00 ( 84.08)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [6199/8100]	Time  0.547 ( 0.570)	Acc@1   0.00 ( 48.84)	Acc@5 100.00 ( 84.02)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [6399/8100]	Time  0.540 ( 0.570)	Acc@1   0.00 ( 48.94)	Acc@5 100.00 ( 84.06)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [6599/8100]	Time  0.547 ( 0.569)	Acc@1 100.00 ( 48.79)	Acc@5 100.00 ( 84.11)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [6799/8100]	Time  0.548 ( 0.568)	Acc@1   0.00 ( 48.75)	Acc@5 100.00 ( 84.01)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [6999/8100]	Time  0.531 ( 0.567)	Acc@1   0.00 ( 48.66)	Acc@5   0.00 ( 83.86)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [7199/8100]	Time  0.530 ( 0.566)	Acc@1 100.00 ( 48.54)	Acc@5 100.00 ( 83.75)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [7399/8100]	Time  0.548 ( 0.565)	Acc@1 100.00 ( 48.32)	Acc@5 100.00 ( 83.65)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [7599/8100]	Time  0.544 ( 0.565)	Acc@1 100.00 ( 48.32)	Acc@5 100.00 ( 83.62)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [7799/8100]	Time  0.540 ( 0.564)	Acc@1 100.00 ( 48.29)	Acc@5 100.00 ( 83.62)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+Test: [7999/8100]	Time  0.537 ( 0.564)	Acc@1   0.00 ( 48.28)	Acc@5 100.00 ( 83.69)
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+100 is the number of buffers present now 
+ *  Acc@1 48.148 Acc@5 83.617
+the number of samples actively queried is 389
+
+		 [set_id] 		 Top-1 acc. 		 Top-5 acc.
+eurosat	
+
+48.15	
+
