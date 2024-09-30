@@ -1,0 +1,578 @@
+***************
+** Arguments **
+***************
+backbone: 
+config_file: configs/trainers/PromptAlign/finegrain_PAlign_vit_b16_c2_ep5_batch4_2ctx_cross_datasets.yaml
+dataset_config_file: configs/datasets/ucf101.yaml
+eval_only: False
+head: 
+load_epoch: 2
+model_dir: /home/owais/PromptAlign/seed2
+no_train: False
+opts: ['DATASET.NUM_SHOTS', '16']
+output_dir: output/evaluation/PromptAlign/finegrain_PAlign_vit_b16_c2_ep5_batch4_2ctx_cross_datasets_16shots/ucf101/seed2
+resume: 
+root: ./data
+seed: 2
+source_domains: None
+target_domains: None
+tpt: True
+trainer: PromptAlign
+transforms: None
+************
+** Config **
+************
+DATALOADER:
+  K_TRANSFORMS: 1
+  NUM_WORKERS: 12
+  RETURN_IMG0: False
+  TEST:
+    BATCH_SIZE: 100
+    SAMPLER: SequentialSampler
+  TRAIN_U:
+    BATCH_SIZE: 32
+    N_DOMAIN: 0
+    N_INS: 16
+    SAME_AS_X: True
+    SAMPLER: RandomSampler
+  TRAIN_X:
+    BATCH_SIZE: 4
+    N_DOMAIN: 0
+    N_INS: 16
+    SAMPLER: RandomSampler
+DATASET:
+  ALL_AS_UNLABELED: False
+  CIFAR_C_LEVEL: 1
+  CIFAR_C_TYPE: 
+  NAME: UCF101
+  NUM_LABELED: -1
+  NUM_SHOTS: 16
+  ROOT: ./data
+  SOURCE_DOMAINS: ()
+  STL10_FOLD: -1
+  SUBSAMPLE_CLASSES: all
+  TARGET_DOMAINS: ()
+  TPT: ucf101
+  VAL_PERCENT: 0.1
+  VARIANT: Worlds
+INPUT:
+  COLORJITTER_B: 0.4
+  COLORJITTER_C: 0.4
+  COLORJITTER_H: 0.1
+  COLORJITTER_S: 0.4
+  CROP_PADDING: 4
+  CUTOUT_LEN: 16
+  CUTOUT_N: 1
+  GB_K: 21
+  GB_P: 0.5
+  GN_MEAN: 0.0
+  GN_STD: 0.15
+  INTERPOLATION: bicubic
+  NO_TRANSFORM: False
+  PIXEL_MEAN: [0.48145466, 0.4578275, 0.40821073]
+  PIXEL_STD: [0.26862954, 0.26130258, 0.27577711]
+  RANDAUGMENT_M: 10
+  RANDAUGMENT_N: 2
+  RGS_P: 0.2
+  RRCROP_SCALE: (0.08, 1.0)
+  SIZE: (224, 224)
+  TRANSFORMS: ('random_resized_crop', 'random_flip', 'normalize')
+MODEL:
+  BACKBONE:
+    NAME: ViT-B/16
+    PRETRAINED: True
+  HEAD:
+    ACTIVATION: relu
+    BN: True
+    DROPOUT: 0.0
+    HIDDEN_LAYERS: ()
+    NAME: 
+  INIT_WEIGHTS: 
+OPTIM:
+  ADAM_BETA1: 0.9
+  ADAM_BETA2: 0.999
+  BASE_LR_MULT: 0.1
+  GAMMA: 0.1
+  LR: 0.0026
+  LR_SCHEDULER: cosine
+  MAX_EPOCH: 2
+  MOMENTUM: 0.9
+  NAME: sgd
+  NEW_LAYERS: ()
+  RMSPROP_ALPHA: 0.99
+  SGD_DAMPNING: 0
+  SGD_NESTEROV: False
+  STAGED_LR: False
+  STEPSIZE: (-1,)
+  WARMUP_CONS_LR: 1e-05
+  WARMUP_EPOCH: 1
+  WARMUP_MIN_LR: 1e-05
+  WARMUP_RECOUNT: True
+  WARMUP_TYPE: constant
+  WEIGHT_DECAY: 0.0005
+OUTPUT_DIR: output/evaluation/PromptAlign/finegrain_PAlign_vit_b16_c2_ep5_batch4_2ctx_cross_datasets_16shots/ucf101/seed2
+RESUME: 
+SEED: 2
+TEST:
+  COMPUTE_CMAT: False
+  EVALUATOR: Classification
+  FINAL_MODEL: last_step
+  NO_TEST: False
+  PER_CLASS_RESULT: False
+  SPLIT: test
+TPT:
+  ALIGN_LAYER_FROM: 0
+  ALIGN_LAYER_TO: 9
+  ALIGN_THRESHOLD: 0.1
+  BATCH_SIZE: 64
+  COCOOP: False
+  DISTR_ALIGN: True
+  DISTR_LOSS_W: 100.0
+  GPU: 1
+  LOADER: True
+  LR: 0.004
+  RUN: True
+  TPT_LOSS: True
+  TPT_THRESHOLD: 0.1
+  TTA_STEPS: 1
+  VIS_MEANS: ./output/features/ImgNetpre_vis_means.pt
+  VIS_VARS: ./output/features/ImgNetpre_vis_vars.pt
+TRAIN:
+  CHECKPOINT_FREQ: 0
+  COUNT_ITER: train_x
+  PRINT_FREQ: 20
+TRAINER:
+  CDAC:
+    CLASS_LR_MULTI: 10
+    P_THRESH: 0.95
+    RAMPUP_COEF: 30
+    RAMPUP_ITRS: 1000
+    STRONG_TRANSFORMS: ()
+    TOPK_MATCH: 5
+  CROSSGRAD:
+    ALPHA_D: 0.5
+    ALPHA_F: 0.5
+    EPS_D: 1.0
+    EPS_F: 1.0
+  DAEL:
+    CONF_THRE: 0.95
+    STRONG_TRANSFORMS: ()
+    WEIGHT_U: 0.5
+  DAELDG:
+    CONF_THRE: 0.95
+    STRONG_TRANSFORMS: ()
+    WEIGHT_U: 0.5
+  DDAIG:
+    ALPHA: 0.5
+    CLAMP: False
+    CLAMP_MAX: 1.0
+    CLAMP_MIN: -1.0
+    G_ARCH: 
+    LMDA: 0.3
+    WARMUP: 0
+  DOMAINMIX:
+    ALPHA: 1.0
+    BETA: 1.0
+    TYPE: crossdomain
+  ENTMIN:
+    LMDA: 0.001
+  FIXMATCH:
+    CONF_THRE: 0.95
+    STRONG_TRANSFORMS: ()
+    WEIGHT_U: 1.0
+  M3SDA:
+    LMDA: 0.5
+    N_STEP_F: 4
+  MAPLE:
+    CTX_INIT: a photo of a
+    N_CTX: 2
+    PREC: fp16
+    PROMPT_DEPTH: 9
+  MCD:
+    N_STEP_F: 4
+  MEANTEACHER:
+    EMA_ALPHA: 0.999
+    RAMPUP: 5
+    WEIGHT_U: 1.0
+  MIXMATCH:
+    MIXUP_BETA: 0.75
+    RAMPUP: 20000
+    TEMP: 2.0
+    WEIGHT_U: 100.0
+  MME:
+    LMDA: 0.1
+  NAME: PromptAlign
+  PROMPTALIGN:
+    CTX_INIT: a photo of a
+    N_CTX: 2
+    PREC: fp16
+    PROMPT_DEPTH: 3
+  SE:
+    CONF_THRE: 0.95
+    EMA_ALPHA: 0.999
+    RAMPUP: 300
+USE_CUDA: True
+VERBOSE: True
+VERSION: 1
+Collecting env info ...
+** System info **
+PyTorch version: 2.4.0+cu121
+Is debug build: False
+CUDA used to build PyTorch: 12.1
+ROCM used to build PyTorch: N/A
+
+OS: Ubuntu 20.04.5 LTS (x86_64)
+GCC version: (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
+Clang version: Could not collect
+CMake version: Could not collect
+Libc version: glibc-2.31
+
+Python version: 3.8.19 (default, Mar 20 2024, 19:58:24)  [GCC 11.2.0] (64-bit runtime)
+Python platform: Linux-5.15.0-113-generic-x86_64-with-glibc2.17
+Is CUDA available: True
+CUDA runtime version: 10.1.243
+CUDA_MODULE_LOADING set to: LAZY
+GPU models and configuration: 
+GPU 0: NVIDIA A40
+GPU 1: NVIDIA A40
+
+Nvidia driver version: 535.183.01
+cuDNN version: Could not collect
+HIP runtime version: N/A
+MIOpen runtime version: N/A
+Is XNNPACK available: True
+
+CPU:
+Architecture:                       x86_64
+CPU op-mode(s):                     32-bit, 64-bit
+Byte Order:                         Little Endian
+Address sizes:                      46 bits physical, 57 bits virtual
+CPU(s):                             64
+On-line CPU(s) list:                0-63
+Thread(s) per core:                 2
+Core(s) per socket:                 16
+Socket(s):                          2
+NUMA node(s):                       2
+Vendor ID:                          GenuineIntel
+CPU family:                         6
+Model:                              106
+Model name:                         Intel(R) Xeon(R) Silver 4314 CPU @ 2.40GHz
+Stepping:                           6
+CPU MHz:                            800.000
+CPU max MHz:                        3400.0000
+CPU min MHz:                        800.0000
+BogoMIPS:                           4800.00
+Virtualization:                     VT-x
+L1d cache:                          1.5 MiB
+L1i cache:                          1 MiB
+L2 cache:                           40 MiB
+L3 cache:                           48 MiB
+NUMA node0 CPU(s):                  0-15,32-47
+NUMA node1 CPU(s):                  16-31,48-63
+Vulnerability Gather data sampling: Mitigation; Microcode
+Vulnerability Itlb multihit:        Not affected
+Vulnerability L1tf:                 Not affected
+Vulnerability Mds:                  Not affected
+Vulnerability Meltdown:             Not affected
+Vulnerability Mmio stale data:      Mitigation; Clear CPU buffers; SMT vulnerable
+Vulnerability Retbleed:             Not affected
+Vulnerability Spec rstack overflow: Not affected
+Vulnerability Spec store bypass:    Mitigation; Speculative Store Bypass disabled via prctl and seccomp
+Vulnerability Spectre v1:           Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:           Mitigation; Enhanced IBRS; IBPB conditional; RSB filling; PBRSB-eIBRS SW sequence; BHI Syscall hardening, KVM SW loop
+Vulnerability Srbds:                Not affected
+Vulnerability Tsx async abort:      Not affected
+Flags:                              fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb cat_l3 invpcid_single intel_ppin ssbd mba ibrs ibpb stibp ibrs_enhanced tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb intel_pt avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local split_lock_detect wbnoinvd dtherm ida arat pln pts avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq la57 rdpid fsrm md_clear pconfig flush_l1d arch_capabilities
+
+Versions of relevant libraries:
+[pip3] flake8==3.7.9
+[pip3] galore-torch==1.0
+[pip3] numpy==1.24.4
+[pip3] torch==2.4.0
+[pip3] torchaudio==0.9.0
+[pip3] torchvision==0.19.0
+[pip3] triton==3.0.0
+[conda] torch                     1.9.0+cu111              pypi_0    pypi
+[conda] torchaudio                0.9.0                    pypi_0    pypi
+[conda] torchvision               0.10.0+cu111             pypi_0    pypi
+        Pillow (10.4.0)
+
+Loading trainer: PromptAlign
+Loading dataset: UCF101
+Reading split from /home/owais/PromptAlign/data/ucf101/split_zhou_UCF101.json
+Loading preprocessed few-shot data from /home/owais/PromptAlign/data/ucf101/split_fewshot/shot_16-seed_2.pkl
+Building transform_train
++ random resized crop (size=(224, 224), scale=(0.08, 1.0))
++ random flip
++ to torch tensor of range [0, 1]
++ normalization (mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711])
+Building transform_test
++ resize the smaller edge to 224
++ 224x224 center crop
++ to torch tensor of range [0, 1]
++ normalization (mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711])
+---------  ------
+Dataset    UCF101
+# classes  101
+# train_x  1,616
+# val      404
+# test     3,783
+---------  ------
+Loading pre-computed means and vars
+Loading CLIP (backbone: ViT-B/16)
+Building custom CLIP
+MaPLe design: Multi-modal Prompt Learning
+Initial context: "a photo of a"
+Number of MaPLe context words (tokens): 2
+Turning off gradients in both the image and the text encoder
+Parameters to be updated: {'prompt_learner.proj.weight', 'prompt_learner.compound_prompt_projections.1.bias', 'prompt_learner.compound_prompts_text.0', 'prompt_learner.proj.bias', 'prompt_learner.ctx', 'prompt_learner.compound_prompts_text.1', 'prompt_learner.compound_prompt_projections.0.bias', 'prompt_learner.compound_prompt_projections.0.weight', 'prompt_learner.compound_prompt_projections.1.weight'}
+Loading evaluator: Classification
+Loading weights to MultiModalPromptLearner from "/home/owais/PromptAlign/seed2/MultiModalPromptLearner/model.pth.tar-2" (epoch = 2)
+Re-updating prompt initializations to current prompts.
+=> Using native Torch AMP. Training in mixed precision.
+number of test samples: 3783
+['Apply_Eye_Makeup', 'Apply_Lipstick', 'Archery', 'Baby_Crawling', 'Balance_Beam', 'Band_Marching', 'Baseball_Pitch', 'Basketball', 'Basketball_Dunk', 'Bench_Press', 'Biking', 'Billiards', 'Blow_Dry_Hair', 'Blowing_Candles', 'Body_Weight_Squats', 'Bowling', 'Boxing_Punching_Bag', 'Boxing_Speed_Bag', 'Breast_Stroke', 'Brushing_Teeth', 'Clean_And_Jerk', 'Cliff_Diving', 'Cricket_Bowling', 'Cricket_Shot', 'Cutting_In_Kitchen', 'Diving', 'Drumming', 'Fencing', 'Field_Hockey_Penalty', 'Floor_Gymnastics', 'Frisbee_Catch', 'Front_Crawl', 'Golf_Swing', 'Haircut', 'Hammering', 'Hammer_Throw', 'Handstand_Pushups', 'Handstand_Walking', 'Head_Massage', 'High_Jump', 'Horse_Race', 'Horse_Riding', 'Hula_Hoop', 'Ice_Dancing', 'Javelin_Throw', 'Juggling_Balls', 'Jumping_Jack', 'Jump_Rope', 'Kayaking', 'Knitting', 'Long_Jump', 'Lunges', 'Military_Parade', 'Mixing', 'Mopping_Floor', 'Nunchucks', 'Parallel_Bars', 'Pizza_Tossing', 'Playing_Cello', 'Playing_Daf', 'Playing_Dhol', 'Playing_Flute', 'Playing_Guitar', 'Playing_Piano', 'Playing_Sitar', 'Playing_Tabla', 'Playing_Violin', 'Pole_Vault', 'Pommel_Horse', 'Pull_Ups', 'Punch', 'Push_Ups', 'Rafting', 'Rock_Climbing_Indoor', 'Rope_Climbing', 'Rowing', 'Salsa_Spin', 'Shaving_Beard', 'Shotput', 'Skate_Boarding', 'Skiing', 'Skijet', 'Sky_Diving', 'Soccer_Juggling', 'Soccer_Penalty', 'Still_Rings', 'Sumo_Wrestling', 'Surfing', 'Swing', 'Table_Tennis_Shot', 'Tai_Chi', 'Tennis_Swing', 'Throw_Discus', 'Trampoline_Jumping', 'Typing', 'Uneven_Bars', 'Volleyball_Spiking', 'Walking_With_Dog', 'Wall_Pushups', 'Writing_On_Board', 'Yo_Yo']
+101 is the number of classes
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+Running for 64 Augmented views
+Running for 1 TTA steps
+1 is the number of buffers present now 
+2 is the number of buffers present now 
+3 is the number of buffers present now 
+4 is the number of buffers present now 
+5 is the number of buffers present now 
+6 is the number of buffers present now 
+7 is the number of buffers present now 
+8 is the number of buffers present now 
+9 is the number of buffers present now 
+10 is the number of buffers present now 
+11 is the number of buffers present now 
+12 is the number of buffers present now 
+13 is the number of buffers present now 
+Test: [ 199/3783]	Time  0.263 ( 0.270)	Acc@1   0.00 ( 68.00)	Acc@5 100.00 ( 89.00)
+14 is the number of buffers present now 
+15 is the number of buffers present now 
+16 is the number of buffers present now 
+17 is the number of buffers present now 
+18 is the number of buffers present now 
+19 is the number of buffers present now 
+20 is the number of buffers present now 
+21 is the number of buffers present now 
+Test: [ 399/3783]	Time  0.283 ( 0.273)	Acc@1 100.00 ( 69.50)	Acc@5 100.00 ( 89.75)
+22 is the number of buffers present now 
+23 is the number of buffers present now 
+24 is the number of buffers present now 
+25 is the number of buffers present now 
+26 is the number of buffers present now 
+27 is the number of buffers present now 
+28 is the number of buffers present now 
+29 is the number of buffers present now 
+30 is the number of buffers present now 
+31 is the number of buffers present now 
+Test: [ 599/3783]	Time  0.315 ( 0.285)	Acc@1 100.00 ( 69.83)	Acc@5 100.00 ( 90.50)
+32 is the number of buffers present now 
+33 is the number of buffers present now 
+34 is the number of buffers present now 
+35 is the number of buffers present now 
+36 is the number of buffers present now 
+37 is the number of buffers present now 
+38 is the number of buffers present now 
+39 is the number of buffers present now 
+40 is the number of buffers present now 
+Test: [ 799/3783]	Time  0.357 ( 0.300)	Acc@1   0.00 ( 70.50)	Acc@5   0.00 ( 90.88)
+41 is the number of buffers present now 
+42 is the number of buffers present now 
+43 is the number of buffers present now 
+44 is the number of buffers present now 
+45 is the number of buffers present now 
+46 is the number of buffers present now 
+47 is the number of buffers present now 
+48 is the number of buffers present now 
+49 is the number of buffers present now 
+50 is the number of buffers present now 
+Test: [ 999/3783]	Time  0.376 ( 0.316)	Acc@1   0.00 ( 69.60)	Acc@5 100.00 ( 90.40)
+51 is the number of buffers present now 
+52 is the number of buffers present now 
+53 is the number of buffers present now 
+54 is the number of buffers present now 
+55 is the number of buffers present now 
+56 is the number of buffers present now 
+57 is the number of buffers present now 
+58 is the number of buffers present now 
+59 is the number of buffers present now 
+60 is the number of buffers present now 
+61 is the number of buffers present now 
+Test: [1199/3783]	Time  0.404 ( 0.331)	Acc@1 100.00 ( 70.00)	Acc@5 100.00 ( 90.83)
+62 is the number of buffers present now 
+63 is the number of buffers present now 
+64 is the number of buffers present now 
+65 is the number of buffers present now 
+66 is the number of buffers present now 
+67 is the number of buffers present now 
+68 is the number of buffers present now 
+69 is the number of buffers present now 
+70 is the number of buffers present now 
+71 is the number of buffers present now 
+Test: [1399/3783]	Time  0.435 ( 0.346)	Acc@1 100.00 ( 69.64)	Acc@5 100.00 ( 91.21)
+72 is the number of buffers present now 
+73 is the number of buffers present now 
+74 is the number of buffers present now 
+75 is the number of buffers present now 
+76 is the number of buffers present now 
+77 is the number of buffers present now 
+78 is the number of buffers present now 
+79 is the number of buffers present now 
+80 is the number of buffers present now 
+81 is the number of buffers present now 
+82 is the number of buffers present now 
+Test: [1599/3783]	Time  0.468 ( 0.360)	Acc@1   0.00 ( 69.19)	Acc@5   0.00 ( 91.06)
+83 is the number of buffers present now 
+84 is the number of buffers present now 
+85 is the number of buffers present now 
+86 is the number of buffers present now 
+87 is the number of buffers present now 
+88 is the number of buffers present now 
+89 is the number of buffers present now 
+Test: [1799/3783]	Time  0.472 ( 0.374)	Acc@1 100.00 ( 69.22)	Acc@5 100.00 ( 90.89)
+90 is the number of buffers present now 
+91 is the number of buffers present now 
+92 is the number of buffers present now 
+93 is the number of buffers present now 
+94 is the number of buffers present now 
+95 is the number of buffers present now 
+96 is the number of buffers present now 
+97 is the number of buffers present now 
+98 is the number of buffers present now 
+99 is the number of buffers present now 
+100 is the number of buffers present now 
+101 is the number of buffers present now 
+102 is the number of buffers present now 
+Test: [1999/3783]	Time  0.508 ( 0.387)	Acc@1 100.00 ( 69.85)	Acc@5 100.00 ( 91.05)
+103 is the number of buffers present now 
+104 is the number of buffers present now 
+105 is the number of buffers present now 
+106 is the number of buffers present now 
+107 is the number of buffers present now 
+108 is the number of buffers present now 
+109 is the number of buffers present now 
+110 is the number of buffers present now 
+111 is the number of buffers present now 
+Test: [2199/3783]	Time  0.536 ( 0.400)	Acc@1 100.00 ( 70.36)	Acc@5 100.00 ( 91.27)
+112 is the number of buffers present now 
+113 is the number of buffers present now 
+114 is the number of buffers present now 
+115 is the number of buffers present now 
+116 is the number of buffers present now 
+117 is the number of buffers present now 
+118 is the number of buffers present now 
+119 is the number of buffers present now 
+120 is the number of buffers present now 
+Test: [2399/3783]	Time  0.563 ( 0.413)	Acc@1 100.00 ( 70.04)	Acc@5 100.00 ( 91.42)
+121 is the number of buffers present now 
+122 is the number of buffers present now 
+123 is the number of buffers present now 
+124 is the number of buffers present now 
+125 is the number of buffers present now 
+126 is the number of buffers present now 
+127 is the number of buffers present now 
+128 is the number of buffers present now 
+129 is the number of buffers present now 
+130 is the number of buffers present now 
+131 is the number of buffers present now 
+Test: [2599/3783]	Time  0.590 ( 0.427)	Acc@1 100.00 ( 69.96)	Acc@5 100.00 ( 91.46)
+132 is the number of buffers present now 
+133 is the number of buffers present now 
+134 is the number of buffers present now 
+135 is the number of buffers present now 
+136 is the number of buffers present now 
+137 is the number of buffers present now 
+138 is the number of buffers present now 
+139 is the number of buffers present now 
+140 is the number of buffers present now 
+141 is the number of buffers present now 
+142 is the number of buffers present now 
+143 is the number of buffers present now 
+Test: [2799/3783]	Time  0.620 ( 0.440)	Acc@1 100.00 ( 70.43)	Acc@5 100.00 ( 91.54)
+144 is the number of buffers present now 
+145 is the number of buffers present now 
+146 is the number of buffers present now 
+147 is the number of buffers present now 
+148 is the number of buffers present now 
+149 is the number of buffers present now 
+150 is the number of buffers present now 
+Biking
+150 is the number of buffers present now 
+150 is the number of buffers present now 
+Test: [2999/3783]	Time  0.640 ( 0.454)	Acc@1 100.00 ( 70.37)	Acc@5 100.00 ( 91.53)
+Body_Weight_Squats
+150 is the number of buffers present now 
+Body_Weight_Squats
+150 is the number of buffers present now 
+150 is the number of buffers present now 
+Jump_Rope
+150 is the number of buffers present now 
+Cricket_Bowling
+150 is the number of buffers present now 
+Yo_Yo
+150 is the number of buffers present now 
+150 is the number of buffers present now 
+Hula_Hoop
+150 is the number of buffers present now 
+150 is the number of buffers present now 
+Handstand_Walking
+150 is the number of buffers present now 
+Test: [3199/3783]	Time  0.614 ( 0.466)	Acc@1 100.00 ( 70.41)	Acc@5 100.00 ( 91.50)
+Volleyball_Spiking
+150 is the number of buffers present now 
+Floor_Gymnastics
+150 is the number of buffers present now 
+150 is the number of buffers present now 
+Volleyball_Spiking
+150 is the number of buffers present now 
+Balance_Beam
+150 is the number of buffers present now 
+150 is the number of buffers present now 
+Trampoline_Jumping
+150 is the number of buffers present now 
+Cricket_Bowling
+150 is the number of buffers present now 
+150 is the number of buffers present now 
+Mixing
+150 is the number of buffers present now 
+Wall_Pushups
+150 is the number of buffers present now 
+Test: [3399/3783]	Time  0.642 ( 0.477)	Acc@1 100.00 ( 70.53)	Acc@5 100.00 ( 91.47)
+Long_Jump
+150 is the number of buffers present now 
+Push_Ups
+150 is the number of buffers present now 
+Jump_Rope
+150 is the number of buffers present now 
+Soccer_Juggling
+150 is the number of buffers present now 
+Nunchucks
+150 is the number of buffers present now 
+Push_Ups
+150 is the number of buffers present now 
+Head_Massage
+150 is the number of buffers present now 
+Balance_Beam
+150 is the number of buffers present now 
+Archery
+150 is the number of buffers present now 
+150 is the number of buffers present now 
+Test: [3599/3783]	Time  0.653 ( 0.487)	Acc@1 100.00 ( 70.83)	Acc@5 100.00 ( 91.58)
+150 is the number of buffers present now 
+Jump_Rope
+150 is the number of buffers present now 
+150 is the number of buffers present now 
+Pizza_Tossing
+150 is the number of buffers present now 
+ *  Acc@1 70.764 Acc@5 91.568
+the number of samples actively queried is 187
+
+		 [set_id] 		 Top-1 acc. 		 Top-5 acc.
+ucf101	
+
+70.76	
+
